@@ -152,7 +152,7 @@ class Context2d: public Nan::ObjectWrap {
     inline bool hasShadow();
     void inline setSourceRGBA(rgba_t color);
     void inline setSourceRGBA(cairo_t *ctx, rgba_t color);
-    void setTextPath(const char *str, double x, double y);
+    void setTextPath(const char *str, double x, double y, double max_width = 0);
     void blur(cairo_surface_t *surface, int radius);
     void shadow(void (fn)(cairo_t *cr));
     void shadowStart();

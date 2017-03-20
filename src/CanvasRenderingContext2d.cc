@@ -1728,12 +1728,18 @@ NAN_METHOD(Context2d::FillText) {
 
   Context2d *context = Nan::ObjectWrap::Unwrap<Context2d>(info.This());
 
+  // Add by BobWong, 2017-03-20
+  double max_width = 0;
+#if HAVE_PANGO
+  max_width = info[3]->NumberValue();
+#endif //
+
   context->savePath();
   if (context->state->textDrawingMode == TEXT_DRAW_GLYPHS) {
     context->fill();
-    context->setTextPath(*str, x, y);
+    context->setTextPath(*str, x, y, max_width);
   } else if (context->state->textDrawingMode == TEXT_DRAW_PATHS) {
-    context->setTextPath(*str, x, y);
+    context->setTextPath(*str, x, y, max_width);
     context->fill();
   }
   context->restorePath();
@@ -1769,11 +1775,21 @@ NAN_METHOD(Context2d::StrokeText) {
  */
 
 void
-Context2d::setTextPath(const char *str, double x, double y) {
+Context2d::setTextPath(const char *str, double x, double y, double max_width /*= 0*/) {
 #if HAVE_PANGO
 
   PangoRectangle ink_rect, logical_rect;
   PangoFontMetrics *metrics = NULL;
+
+  /// add by bobwong, 2017-03-20 {
+  if (max_width > 0) {
+    int width = pango_units_from_double(max_width);
+    //printf("Context2d::setTextPath | Max width: %d\n", width);
+    pango_layout_set_width(_layout, width);
+    pango_layout_set_ellipsize(_layout, PANGO_ELLIPSIZE_END);
+    pango_layout_set_wrap(_layout, PANGO_WRAP_WORD_CHAR);
+  }
+  /// }
 
   pango_layout_set_text(_layout, str, -1);
   pango_cairo_update_layout(_context, _layout);
